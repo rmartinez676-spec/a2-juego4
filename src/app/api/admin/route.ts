@@ -1,8 +1,9 @@
 import { asc, desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db, hasDb } from "@/db";
 import { ensureDb } from "@/db/ensure";
 import { fuentes, preguntas, temas } from "@/db/schema";
 import { fetchArticulos, generarCloze, marcarRevisada, syncFuentes } from "@/lib/boe";
+import { seedContent } from "@/content";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,9 +18,38 @@ const deny = () => Response.json({ error: "No autorizado: indica el ADMIN_TOKEN"
 
 export async function GET(req: Request) {
   if (!authorized(req)) return deny();
-  await ensureDb();
   const url = new URL(req.url);
   const tema = url.searchParams.get("tema");
+
+  if (!hasDb || !db) {
+    const seed = seedContent();
+    const f = seed.fuentes;
+    const t = seed.temas.map((x) => ({
+      id: x.id,
+      titulo: x.titulo,
+      bloque: x.bloque,
+      orden: x.orden,
+      revisar: x.revisar,
+      fuentes: x.fuentes,
+    }));
+    const p = tema
+      ? seed.preguntas
+          .filter((x) => x.tema === tema)
+          .map((x) => ({
+            id: x.id,
+            enunciado: x.q,
+            opciones: x.opts,
+            correcta: x.ok,
+            dif: x.dif,
+            activa: true,
+            origen: x.origen ?? "seed",
+            explicacion: x.exp ?? "",
+          }))
+      : [];
+    return Response.json({ fuentes: f, temas: t, preguntas: p, protegido: !!process.env.ADMIN_TOKEN, noDb: true });
+  }
+
+  await ensureDb();
   const [f, t, p] = await Promise.all([
     db.select().from(fuentes).orderBy(asc(fuentes.tipo), asc(fuentes.nombre)),
     db.select({ id: temas.id, titulo: temas.titulo, bloque: temas.bloque, orden: temas.orden, revisar: temas.revisar, fuentes: temas.fuentes }).from(temas).orderBy(asc(temas.bloque), asc(temas.orden)),
@@ -30,6 +60,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   if (!authorized(req)) return deny();
+  if (!hasDb || !db) {
+    return Response.json(
+      { error: "Base de datos no configurada. Añade DATABASE_URL en Vercel para guardar cambios." },
+      { status: 400 },
+    );
+  }
   await ensureDb();
   const b = (await req.json()) as Record<string, unknown>;
   try {

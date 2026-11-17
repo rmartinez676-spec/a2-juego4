@@ -304,6 +304,8 @@ export default function Game() {
           content={content}
           level={play.level}
           diffKey={progress.diff}
+          touchMode={progress.touchControls ?? "auto"}
+          onSetTouchMode={(m) => update({ ...progress, touchControls: m })}
           stats={stats.current}
           onStat={onStat}
           onExit={() => {
@@ -372,7 +374,19 @@ export default function Game() {
                 <b>Modo estudio:</b> todos los mundos y niveles desbloqueados
               </span>
             </label>
-            <div className="row">
+            <div className="px t-sub">Controles táctiles en pantalla</div>
+            <div className="chips">
+              {(["auto", "on", "off"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  className={`chip btnchip ${(progress.touchControls ?? "auto") === mode ? "on" : ""}`}
+                  onClick={() => update({ ...progress, touchControls: mode })}
+                >
+                  {mode === "auto" ? "🕹 Automático" : mode === "on" ? "🕹 Siempre visibles" : "⌨ Ocultar"}
+                </button>
+              ))}
+            </div>
+            <div className="row" style={{ marginTop: 10 }}>
               <MuteBtn />
               <span>Música y efectos</span>
               <a className="btn small alt" href="/admin">
@@ -394,14 +408,26 @@ export default function Game() {
             <div className="px t-title">❓ Cómo se juega</div>
             <ul>
               <li>
-                <b>Mover:</b> ← → / A D · <b>Saltar:</b> ↑ / Espacio / Z (mantén para saltar más) · <b>Hablar:</b> E / X. En el móvil: botones ◀ ▶ y A (saltar) / B (hablar).
+                <b>En ordenador (teclado):</b>
+                <br />• <b>Mover:</b> ← → o A / D.
+                <br />• <b>Saltar:</b> ↑ / Espacio / W / Z (mantén presionado para saltar más alto).
+                <br />• <b>Hablar / interactuar:</b> E / X / Enter.
+                <br />• <b>Tests:</b> Teclas 1, 2, 3, 4 para responder rápidamente y Enter para continuar.
+                <br />• <b>Pausa:</b> Escape o P.
               </li>
-              <li>Habla con los <b>personajes</b> (¡!): te explican el tema. Salta sobre los enemigos para eliminarlos.</li>
+              <li>
+                <b>En móvil o tablet (táctil):</b>
+                <br />• <b>D-Pad ◀ ▶:</b> Toca o desliza el pulgar con suavidad para moverte a izquierda y derecha.
+                <br />• <b>Botón A (verde):</b> Saltar (mantén para salto alto).
+                <br />• <b>Botón B (azul):</b> Hablar con personajes y golpear cofres.
+                <br />• <b>Giro y orientación:</b> Puedes jugar en horizontal (pantalla completa) o vertical (modo consola portátil). Toca 🕹 arriba para mostrar u ocultar los botones cuando quieras.
+              </li>
+              <li>Habla con los <b>personajes</b> (¡!): te explican los temas del temario. Salta sobre los enemigos para eliminarlos.</li>
               <li>Golpea los bloques <b>?</b> desde abajo: pregunta rápida. Si aciertas, ganas puntos y un café (+1 ❤).</li>
               <li>El <b>cofre ★</b> contiene un minijuego: Relaciona, Ordena o Rayo V/F.</li>
               <li>Al final, la <b>puerta PRUEBA</b>: un test del tema. Las preguntas cambian en cada intento.</li>
               <li>El <b>jefe final</b> de cada mundo: recoge los libros de ley 📕 y responde bien para dañarlo.</li>
-              <li>El <b>Simulacro</b> reproduce un examen con todo el temario y penalización por fallos.</li>
+              <li>El <b>Simulacro</b> reproduce un examen oficial con todo el temario y penalización por fallos.</li>
               <li>Ajusta la <b>dificultad</b> (vidas, tiempo y tipo de pregunta) en Ajustes.</li>
             </ul>
             <div className="t-foot">
@@ -648,18 +674,186 @@ type Ov =
   | { k: "pause" }
   | { k: "win"; stars: number; score: number; coins: number; acc: number };
 
-function useTouch() {
-  const [t, setT] = useState(false);
+function useTouchDetection() {
+  const [detected, setDetected] = useState(false);
   useEffect(() => {
-    setT(window.matchMedia?.("(pointer: coarse)").matches || navigator.maxTouchPoints > 0 || "ontouchstart" in window);
+    const hasCoarse = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
+    const hasTouchPoints = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+    const hasTouchStart = typeof window !== "undefined" && "ontouchstart" in window;
+    if (hasCoarse || hasTouchPoints || hasTouchStart) {
+      setDetected(true);
+    }
+    const onTouch = () => setDetected(true);
+    window.addEventListener("touchstart", onTouch, { passive: true, once: true });
+    return () => window.removeEventListener("touchstart", onTouch);
   }, []);
-  return t;
+  return detected;
+}
+
+function TouchControls({ engine }: { engine: React.RefObject<Engine | null> }) {
+  const [activeLeft, setActiveLeft] = useState(false);
+  const [activeRight, setActiveRight] = useState(false);
+  const [activeJump, setActiveJump] = useState(false);
+  const [activeAct, setActiveAct] = useState(false);
+  const dpadPointerId = useRef<number | null>(null);
+  const dpadRef = useRef<HTMLDivElement>(null);
+
+  const updateDpad = useCallback(
+    (clientX: number) => {
+      if (!dpadRef.current) return;
+      const rect = dpadRef.current.getBoundingClientRect();
+      const midX = rect.left + rect.width / 2;
+      const isL = clientX < midX - 6;
+      const isR = clientX > midX + 6;
+      setActiveLeft(isL);
+      setActiveRight(isR);
+      engine.current?.setVirtual("left", isL);
+      engine.current?.setVirtual("right", isR);
+    },
+    [engine],
+  );
+
+  const handleDpadDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dpadPointerId.current = e.pointerId;
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    try {
+      navigator.vibrate?.(10);
+    } catch {
+      /* ignore */
+    }
+    updateDpad(e.clientX);
+  };
+
+  const handleDpadMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dpadPointerId.current !== e.pointerId) return;
+    e.preventDefault();
+    updateDpad(e.clientX);
+  };
+
+  const handleDpadEnd = (e?: React.PointerEvent<HTMLDivElement>) => {
+    if (e && dpadPointerId.current !== null && e.pointerId !== dpadPointerId.current) return;
+    dpadPointerId.current = null;
+    setActiveLeft(false);
+    setActiveRight(false);
+    engine.current?.setVirtual("left", false);
+    engine.current?.setVirtual("right", false);
+  };
+
+  const bindAction = (key: "jump" | "act", setActive: (v: boolean) => void) => {
+    const press = (e: React.PointerEvent) => {
+      e.preventDefault();
+      try {
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      try {
+        navigator.vibrate?.(12);
+      } catch {
+        /* ignore */
+      }
+      setActive(true);
+      engine.current?.setVirtual(key, true);
+    };
+    const release = (e: React.PointerEvent) => {
+      e.preventDefault();
+      setActive(false);
+      engine.current?.setVirtual(key, false);
+    };
+    return {
+      onPointerDown: press,
+      onPointerUp: release,
+      onPointerCancel: release,
+      onLostPointerCapture: release,
+      onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+    };
+  };
+
+  useEffect(() => {
+    const cleanup = () => {
+      dpadPointerId.current = null;
+      setActiveLeft(false);
+      setActiveRight(false);
+      setActiveJump(false);
+      setActiveAct(false);
+      engine.current?.clearVirtual();
+    };
+    window.addEventListener("pointerup", cleanup);
+    window.addEventListener("pointercancel", cleanup);
+    return () => {
+      window.removeEventListener("pointerup", cleanup);
+      window.removeEventListener("pointercancel", cleanup);
+      cleanup();
+    };
+  }, [engine]);
+
+  return (
+    <div className="tc">
+      <div
+        ref={dpadRef}
+        className="tc-dpad"
+        onPointerDown={handleDpadDown}
+        onPointerMove={handleDpadMove}
+        onPointerUp={handleDpadEnd}
+        onPointerCancel={handleDpadEnd}
+        onLostPointerCapture={handleDpadEnd}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <button
+          type="button"
+          tabIndex={-1}
+          className={`tbtn tbtn-dir ${activeLeft ? "active" : ""}`}
+          aria-label="Izquierda"
+        >
+          <span className="tbtn-arrow">◀</span>
+        </button>
+        <div className="tbtn-dpad-center" />
+        <button
+          type="button"
+          tabIndex={-1}
+          className={`tbtn tbtn-dir ${activeRight ? "active" : ""}`}
+          aria-label="Derecha"
+        >
+          <span className="tbtn-arrow">▶</span>
+        </button>
+      </div>
+
+      <div className="tc-right">
+        <button
+          type="button"
+          tabIndex={-1}
+          className={`tbtn tbtn-act b ${activeAct ? "active" : ""}`}
+          aria-label="Hablar o interactuar"
+          {...bindAction("act", setActiveAct)}
+        >
+          <span className="tbtn-sub">HABLAR</span>
+          <span className="tbtn-key">B</span>
+        </button>
+        <button
+          type="button"
+          tabIndex={-1}
+          className={`tbtn tbtn-act a ${activeJump ? "active" : ""}`}
+          aria-label="Saltar"
+          {...bindAction("jump", setActiveJump)}
+        >
+          <span className="tbtn-sub">SALTAR</span>
+          <span className="tbtn-key">A</span>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function PlayScreen({
   content,
   level,
   diffKey,
+  touchMode = "auto",
   stats,
   onStat,
   onExit,
@@ -671,6 +865,8 @@ function PlayScreen({
   content: Content;
   level: LevelRef;
   diffKey: DiffKey;
+  touchMode?: "auto" | "on" | "off";
+  onSetTouchMode?: (mode: "auto" | "on" | "off") => void;
   stats: Stats;
   onStat: (id: string, ok: boolean) => void;
   onExit: () => void;
@@ -685,7 +881,10 @@ function PlayScreen({
   const used = useRef(new Set<string>());
   const handler = useRef<(e: GameEvent) => void>(() => undefined);
   const [ov, setOv] = useState<Ov | null>(null);
-  const touch = useTouch();
+  const touchDetected = useTouchDetection();
+  const [touchOverride, setTouchOverride] = useState<boolean | null>(null);
+  const [showHint, setShowHint] = useState(true);
+  const touchActive = touchOverride !== null ? touchOverride : touchMode === "on" ? true : touchMode === "off" ? false : touchDetected;
   const tema = level.tema;
   const world = WORLDS[level.world];
   const [canFs, setCanFs] = useState(false);
@@ -789,21 +988,6 @@ function PlayScreen({
         .catch(() => undefined);
   };
 
-  const bind = (k: "left" | "right" | "jump" | "act") => {
-    const up = () => eng.current?.setVirtual(k, false);
-    return {
-      onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.currentTarget.setPointerCapture?.(e.pointerId);
-        eng.current?.setVirtual(k, true);
-      },
-      onPointerUp: up,
-      onPointerCancel: up,
-      onLostPointerCapture: up,
-      onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
-    };
-  };
-
   const finishTest = (r: TestResult, need: number) => {
     if (r.correct >= need) complete(r.correct / Math.max(1, r.total));
     else {
@@ -815,10 +999,34 @@ function PlayScreen({
   return (
     <div className="g-stage">
       <canvas ref={canvasRef} className="g-canvas" />
-      <div className="rotate-hint">📱↻ Gira el móvil en horizontal para jugar mejor</div>
+      {showHint && (
+        <div className="rotate-hint">
+          <span>📱↻ Gira el móvil en horizontal para pantalla completa</span>
+          <button
+            type="button"
+            className="hint-close"
+            aria-label="Cerrar aviso"
+            onClick={() => setShowHint(false)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {ov === null && (
         <div className="g-top">
+          <button
+            className={`icon-btn ${touchActive ? "active" : ""}`}
+            tabIndex={-1}
+            aria-label={touchActive ? "Ocultar botones táctiles" : "Mostrar botones táctiles"}
+            title={touchActive ? "Ocultar botones táctiles" : "Mostrar botones táctiles"}
+            onClick={(e) => {
+              e.currentTarget.blur();
+              setTouchOverride(!touchActive);
+            }}
+          >
+            🕹
+          </button>
           <button
             className="icon-btn"
             tabIndex={-1}
@@ -840,26 +1048,7 @@ function PlayScreen({
         </div>
       )}
 
-      {touch && ov === null && (
-        <div className="tc">
-          <div className="tc-left">
-            <button className="tbtn" aria-label="Izquierda" {...bind("left")}>
-              ◀
-            </button>
-            <button className="tbtn" aria-label="Derecha" {...bind("right")}>
-              ▶
-            </button>
-          </div>
-          <div className="tc-right">
-            <button className="tbtn b" aria-label="Hablar" {...bind("act")}>
-              B
-            </button>
-            <button className="tbtn a" aria-label="Saltar" {...bind("jump")}>
-              A
-            </button>
-          </div>
-        </div>
-      )}
+      {touchActive && ov === null && <TouchControls engine={eng} />}
 
       {ov?.k === "npc" && tema?.npcs[ov.i] && <DialogBox npc={tema.npcs[ov.i]} fuentes={tema.fuentes} onClose={resume} />}
 
@@ -932,6 +1121,12 @@ function PlayScreen({
             <div className="row">
               <MuteBtn />
               <span>Música y efectos</span>
+              <button
+                className="btn small dark"
+                onClick={() => setTouchOverride(!touchActive)}
+              >
+                🕹 {touchActive ? "Ocultar botones táctiles" : "Mostrar botones táctiles"}
+              </button>
             </div>
             <div className="t-foot wrap">
               <button className="btn dark" onClick={onExit}>

@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db, hasDb } from "@/db";
 import { ensureDb } from "@/db/ensure";
 import { fuentes, preguntas, temas } from "@/db/schema";
 import { SEED_VERSION, seedContent } from "@/content";
@@ -12,6 +12,9 @@ const DAY = 24 * 3600 * 1000;
 
 export async function GET() {
   try {
+    if (!hasDb || !db) {
+      return Response.json(seedContent(), { headers: { "Cache-Control": "no-store" } });
+    }
     await ensureDb();
     const [t, p, f] = await Promise.all([
       db.select().from(temas).orderBy(asc(temas.bloque), asc(temas.orden)),

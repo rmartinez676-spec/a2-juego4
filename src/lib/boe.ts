@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { db } from "@/db";
+import { db, hasDb } from "@/db";
 import { fuentes, temas } from "@/db/schema";
 
 const BASE = "https://www.boe.es/datosabiertos/api/legislacion-consolidada/id";
@@ -27,6 +27,7 @@ async function getMeta(id: string) {
 
 /** Consulta al BOE la fecha de última actualización de cada norma y marca los temas a revisar si cambió. */
 export async function syncFuentes(): Promise<SyncResult[]> {
+  if (!hasDb || !db) return [];
   const rows = await db.select().from(fuentes).where(eq(fuentes.tipo, "boe"));
   const out: SyncResult[] = [];
   for (let i = 0; i < rows.length; i += 6) {
@@ -64,6 +65,7 @@ export async function syncFuentes(): Promise<SyncResult[]> {
 }
 
 export async function marcarRevisada(id: string) {
+  if (!hasDb || !db) return;
   await db.update(fuentes).set({ cambio: false }).where(eq(fuentes.id, id));
   await db.execute(sql`UPDATE temas SET revisar = false WHERE fuentes @> ${JSON.stringify([id])}::jsonb`);
 }
@@ -156,6 +158,7 @@ export function generarCloze(arts: Articulo[], n: number): Cloze[] {
 }
 
 export async function temasDeFuente(id: string) {
+  if (!hasDb || !db) return [];
   return db.execute(sql`SELECT id, titulo FROM temas WHERE fuentes @> ${JSON.stringify([id])}::jsonb ORDER BY bloque, orden`);
 }
 

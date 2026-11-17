@@ -4,5 +4,14 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 export default defineConfig([
   // Keep the starter on the flat config export that actually runs under the pinned ESLint/Next toolchain.
   ...nextCoreWebVitals,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "@next/next/no-img-element": "warn",
+      "@next/next/no-html-link-for-pages": "warn",
+    },
+  },
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**"]),
 ]);

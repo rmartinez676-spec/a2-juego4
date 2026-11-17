@@ -1,5 +1,5 @@
 import { and, eq, notInArray, sql } from "drizzle-orm";
-import { db } from "@/db";
+import { db, hasDb } from "@/db";
 import { fuentes, meta, preguntas, temas } from "@/db/schema";
 import { SEED_VERSION, seedContent } from "@/content";
 import { FUENTES } from "@/content/fuentes";
@@ -111,6 +111,9 @@ async function init() {
 
 /** Crea las tablas si no existen y carga/actualiza el temario semilla. */
 export function ensureDb(): Promise<void> {
+  if (!hasDb || !db) {
+    return Promise.resolve();
+  }
   if (!globalThis.__oposReady) {
     globalThis.__oposReady = init().catch((e) => {
       globalThis.__oposReady = undefined;

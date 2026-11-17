@@ -4,6 +4,7 @@ export interface Progress {
   levels: Record<string, { stars: number; best: number }>;
   diff: DiffKey;
   unlockAll: boolean;
+  touchControls?: "auto" | "on" | "off";
 }
 export interface Stats {
   seen: Record<string, number>;
@@ -14,7 +15,7 @@ export interface Stats {
 const PK = "opos.progress.v1";
 const SK = "opos.stats.v1";
 
-export const emptyProgress = (): Progress => ({ levels: {}, diff: "normal", unlockAll: false });
+export const emptyProgress = (): Progress => ({ levels: {}, diff: "normal", unlockAll: false, touchControls: "auto" });
 export const emptyStats = (): Stats => ({ seen: {}, right: {}, wrong: {} });
 
 function load<T>(key: string, fallback: () => T): T {

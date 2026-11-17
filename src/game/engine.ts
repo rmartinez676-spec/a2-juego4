@@ -195,6 +195,9 @@ export class Engine {
   setVirtual(k: "left" | "right" | "jump" | "act", v: boolean) {
     this.virt[k] = v;
   }
+  clearVirtual() {
+    this.virt = { left: false, right: false, jump: false, act: false };
+  }
 
   // ---------- ciclo ----------
   start() {
