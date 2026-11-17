@@ -1,0 +1,123 @@
+import type { TemaSeed } from "./types";
+import { F } from "./fuentes";
+
+export const b2: TemaSeed[] = [
+  {
+    n: 1,
+    titulo: "La Unión Europea: antecedentes, naturaleza jurídica, Tratados y ampliación",
+    resumen: "De la CECA a Lisboa: hitos, objetivos y valores (art. 2 TUE), naturaleza jurídica, competencias y principios, ampliación (art. 49), retirada (art. 50) y cooperaciones reforzadas.",
+    fuentes: [F.TUE, F.TFUE],
+    npcs: [
+      { who: "europa", lines: ["Soy Europa Eva. Todo empezó con la Declaración Schuman (1950) y la CECA (París, 1951). Los Tratados de Roma (1957) crearon la CEE y Euratom, con 6 países fundadores. España ingresó el 1 de enero de 1986.", "Maastricht (1992) creó la Unión Europea y la unión económica y monetaria. El Tratado de Lisboa (en vigor en diciembre de 2009) suprimió los pilares, dio personalidad jurídica única a la UE y confirmó el TUE y el TFUE con igual valor jurídico."] },
+      { who: "comisario", lines: ["Hoy la UE tiene 27 Estados miembros. Para entrar, un Estado europeo debe respetar los valores del art. 2 TUE (dignidad, libertad, democracia, igualdad, Estado de Derecho y derechos humanos) según el art. 49. El art. 50 regula la retirada voluntaria.", "Las competencias se rigen por los principios de atribución, subsidiariedad y proporcionalidad. Una cooperación reforzada (art. 20 TUE) exige al menos 9 Estados y es el último recurso."] },
+    ],
+    q: [
+      [1, "¿Cuántos Estados miembros tiene hoy la UE?", "27", "28", "25", "30"],
+      [1, "¿En qué año se adhirió España a las Comunidades Europeas?", "1986", "1957", "1992", "1995"],
+      [2, "¿Qué tratado creó la Unión Europea?", "Maastricht", "Roma", "Lisboa", "París"],
+      [2, "¿Qué tratado de 2009 suprimió la estructura de pilares?", "Lisboa", "Niza", "Ámsterdam", "Maastricht"],
+      [2, "¿Cuántos Estados fundaron las Comunidades Europeas?", "6", "9", "12", "10"],
+      [3, "¿Cuántos Estados como mínimo para una cooperación reforzada?", "9", "3", "14", "Un tercio"],
+      [3, "¿Qué artículo del TUE regula la retirada voluntaria?", "Art. 50", "Art. 49", "Art. 2", "Art. 20"],
+      [3, "¿Qué principios rigen la delimitación y ejercicio de competencias de la UE?", "Atribución, subsidiariedad y proporcionalidad", "Jerarquía y desconcentración", "Solidaridad y autonomía", "Unanimidad y reciprocidad"],
+    ],
+    orden: ["Hitos de la construcción europea", ["Declaración Schuman y CECA", "Tratados de Roma (CEE y Euratom)", "Tratado de Maastricht", "Tratado de Lisboa"]],
+  },
+  {
+    n: 2,
+    titulo: "Organización de la UE (I): Consejo Europeo, Consejo y Comisión",
+    resumen: "Composición y funciones del Consejo Europeo, del Consejo de la UE y de la Comisión; mayoría cualificada y procedimiento legislativo ordinario.",
+    fuentes: [F.TUE, F.TFUE],
+    npcs: [
+      { who: "comisario", lines: ["La Comisión Europea tiene un comisario por Estado miembro, mandato de 5 años y el monopolio de la iniciativa legislativa. Es guardiana de los Tratados, ejecuta el presupuesto y la elige el Parlamento a propuesta del Consejo Europeo.", "El Alto Representante para Asuntos Exteriores es vicepresidente de la Comisión y preside el Consejo de Asuntos Exteriores."] },
+      { who: "europa", lines: ["El Consejo Europeo reúne a los Jefes de Estado o de Gobierno, a su Presidente y al de la Comisión. Da el impulso político, pero no legisla. Su Presidente tiene un mandato de 2,5 años renovable una vez.", "El Consejo de la UE reúne a ministros nacionales, legisla y aprueba el presupuesto junto al Parlamento. Su presidencia rota cada 6 meses. Mayoría cualificada: 55% de los Estados que sumen al menos el 65% de la población."] },
+    ],
+    q: [
+      [1, "¿Quién tiene el monopolio de la iniciativa legislativa en la UE?", "La Comisión Europea", "El Parlamento Europeo", "El Consejo Europeo", "El TJUE"],
+      [1, "¿Cuántos años dura el mandato de la Comisión?", "5 años", "4 años", "6 años", "2,5 años"],
+      [2, "¿Quién forma el Consejo Europeo?", "Jefes de Estado o de Gobierno, su Presidente y el de la Comisión", "Los ministros de cada materia", "Los comisarios", "Los eurodiputados"],
+      [2, "La Presidencia del Consejo de la UE es…", "Rotatoria cada 6 meses", "Permanente", "Anual", "Elegida por el Parlamento"],
+      [2, "El Consejo Europeo ejerce funciones legislativas.", false, "Da impulso político general, pero no legisla."],
+      [3, "Mayoría cualificada (art. 16 TUE): 55% de los Estados y…", "65% de la población", "50% de la población", "75% de la población", "Unanimidad de los grandes"],
+      [3, "¿Cuánto dura el mandato del Presidente del Consejo Europeo?", "2,5 años renovable una vez", "5 años", "6 meses", "4 años"],
+    ],
+  },
+  {
+    n: 3,
+    titulo: "Organización de la UE (II): Parlamento Europeo, TJUE, Tribunal de Cuentas y BCE",
+    resumen: "El Parlamento Europeo (funciones, elección), el TJUE y sus recursos, el Tribunal de Cuentas Europeo y el Banco Central Europeo.",
+    fuentes: [F.TUE, F.TFUE],
+    npcs: [
+      { who: "jueza", lines: ["El Tribunal de Justicia de la UE tiene sede en Luxemburgo y se compone del Tribunal de Justicia y el Tribunal General. Resuelve recursos por incumplimiento, de anulación, por omisión y cuestiones prejudiciales (art. 267 TFUE) planteadas por jueces nacionales.", "El Tribunal de Cuentas Europeo, también en Luxemburgo, controla externamente las finanzas de la UE; no tiene funciones jurisdiccionales."] },
+      { who: "euro", lines: ["El Parlamento Europeo representa a los ciudadanos: se elige por sufragio universal directo cada 5 años, legisla y aprueba el presupuesto con el Consejo, ejerce control político y elige al Presidente de la Comisión. Puede censurar a la Comisión por 2/3 de los votos y mayoría de sus miembros.", "El BCE tiene sede en Fráncfort. Su objetivo principal es la estabilidad de precios. Con los bancos centrales de los países del euro forma el Eurosistema."] },
+    ],
+    q: [
+      [1, "¿Dónde tiene su sede el Tribunal de Justicia de la UE?", "Luxemburgo", "Bruselas", "Estrasburgo", "Fráncfort"],
+      [1, "¿Dónde tiene su sede el Banco Central Europeo?", "Fráncfort", "Bruselas", "París", "Luxemburgo"],
+      [2, "¿Cuál es el objetivo principal del BCE?", "Mantener la estabilidad de precios", "Financiar a los Estados", "Controlar el déficit", "Fomentar el empleo"],
+      [2, "¿Cada cuánto se elige el Parlamento Europeo?", "5 años", "4 años", "6 años", "3 años"],
+      [2, "¿Qué mecanismo permite a un juez nacional consultar al TJUE?", "Cuestión prejudicial", "Recurso de anulación", "Recurso por omisión", "Recurso por incumplimiento"],
+      [3, "Mayoría para una moción de censura del PE contra la Comisión:", "2/3 de los votos emitidos y mayoría de los miembros", "Mayoría simple", "3/5", "Unanimidad"],
+      [3, "El Parlamento Europeo elige al Presidente de la Comisión a propuesta del Consejo Europeo.", true, "El candidato lo propone el Consejo Europeo y lo elige el Parlamento."],
+    ],
+  },
+  {
+    n: 4,
+    titulo: "Las fuentes del Derecho de la Unión Europea",
+    resumen: "Derecho originario y derivado (art. 288 TFUE): reglamentos, directivas, decisiones, recomendaciones y dictámenes. Efecto directo, primacía y relación con los ordenamientos nacionales.",
+    fuentes: [F.TFUE],
+    npcs: [
+      { who: "comisario", lines: ["Derecho originario: los Tratados (TUE, TFUE y Euratom), la Carta de Derechos Fundamentales y los principios generales. Derecho derivado: los actos del art. 288 TFUE.", "El reglamento tiene alcance general, es obligatorio en todos sus elementos y directamente aplicable. La directiva obliga en cuanto al resultado, dejando libres forma y medios, y debe transponerse en un plazo."] },
+      { who: "jueza", lines: ["La decisión es obligatoria en todos sus elementos y, si designa destinatarios, solo para ellos. Las recomendaciones y los dictámenes no son vinculantes.", "Dos pilares jurisprudenciales: Van Gend en Loos (1963) estableció el efecto directo y Costa/ENEL (1964) la primacía del Derecho de la Unión sobre el nacional."] },
+    ],
+    q: [
+      [1, "¿Qué acto de la UE es obligatorio en todos sus elementos y directamente aplicable?", "Reglamento", "Directiva", "Recomendación", "Dictamen"],
+      [1, "¿Qué actos de la UE no son vinculantes?", "Recomendaciones y dictámenes", "Reglamentos", "Decisiones con destinatario", "Directivas"],
+      [2, "Una directiva obliga a los Estados en cuanto…", "Al resultado, dejando libres forma y medios", "A todos sus elementos", "Solo a los destinatarios", "A nada: es orientativa"],
+      [2, "El TUE y el TFUE son Derecho…", "Originario o primario", "Derivado", "Complementario", "Subsidiario"],
+      [2, "Los reglamentos europeos necesitan norma nacional de transposición.", false, "Son directamente aplicables; quien se transpone es la directiva."],
+      [3, "¿Qué sentencia estableció el efecto directo (1963)?", "Van Gend en Loos", "Costa/ENEL", "Francovich", "Cassis de Dijon"],
+      [3, "¿Qué sentencia estableció la primacía del Derecho comunitario?", "Costa/ENEL", "Van Gend en Loos", "Francovich", "Simmenthal"],
+      [3, "¿Qué artículo del TFUE define reglamentos, directivas y decisiones?", "Art. 288", "Art. 267", "Art. 258", "Art. 20"],
+    ],
+  },
+  {
+    n: 5,
+    titulo: "El presupuesto comunitario, los fondos europeos y la cohesión",
+    resumen: "Marco financiero plurianual, recursos propios, equilibrio presupuestario, fondos estructurales y de cohesión, PAC y Next Generation EU.",
+    fuentes: [F.TFUE],
+    npcs: [
+      { who: "euro", lines: ["El presupuesto anual de la UE debe estar equilibrado (art. 310 TFUE). Se enmarca en un Marco Financiero Plurianual, el actual 2021-2027, que adopta el Consejo por unanimidad con la aprobación del Parlamento.", "Los recursos propios son los derechos de aduana, el recurso basado en el IVA, el recurso basado en la RNB y otros, como el de plásticos no reciclados."] },
+      { who: "europa", lines: ["La cohesión económica, social y territorial se financia con el FEDER, el FSE+ y el Fondo de Cohesión, destinado a Estados con RNB per cápita inferior al 90% de la media. Las regiones menos desarrolladas tienen un PIB per cápita inferior al 75%.", "La PAC se financia con el FEAGA y el FEADER. Next Generation EU (2020) y su Mecanismo de Recuperación y Resiliencia impulsaron la salida de la crisis de la pandemia."] },
+    ],
+    q: [
+      [1, "¿Qué principio exige que ingresos y gastos del presupuesto de la UE coincidan?", "Equilibrio presupuestario", "Anualidad", "Universalidad", "Unidad"],
+      [1, "¿Qué periodo cubre el actual Marco Financiero Plurianual?", "2021-2027", "2014-2020", "2028-2034", "2018-2024"],
+      [2, "¿Qué fondos financian la Política Agrícola Común?", "FEAGA y FEADER", "FEDER", "FSE+", "Fondo de Cohesión"],
+      [2, "El Fondo de Cohesión va a Estados con RNB per cápita inferior al…", "90% de la media de la UE", "75% de la media", "100% de la media", "50% de la media"],
+      [2, "¿Qué instrumento de recuperación se creó en 2020?", "Next Generation EU", "Fondo de Cohesión", "Plan Marshall", "Eurobono perpetuo"],
+      [3, "Las regiones menos desarrolladas tienen un PIB per cápita inferior al…", "75% de la media de la UE", "90%", "50%", "100%"],
+      [3, "¿Quién adopta el Marco Financiero Plurianual?", "Consejo por unanimidad con aprobación del Parlamento", "Comisión por mayoría", "Consejo Europeo por mayoría cualificada", "El Parlamento en solitario"],
+    ],
+  },
+  {
+    n: 6,
+    titulo: "Políticas de la UE: mercado interior, UEM, PESC, ELSJ, competencia, agricultura y pesca",
+    resumen: "Cuatro libertades, Schengen, unión económica y monetaria y criterios de convergencia, política exterior y de seguridad común, espacio de libertad, seguridad y justicia, competencia y PAC.",
+    fuentes: [F.TFUE, F.TUE, F.COMPET],
+    npcs: [
+      { who: "agricultor", lines: ["El mercado interior es un espacio sin fronteras interiores con libre circulación de mercancías, personas, servicios y capitales. La política agrícola común persigue aumentar la productividad, garantizar un nivel de vida equitativo a los agricultores y estabilizar los mercados.", "También existe una política pesquera común. Schengen elimina los controles en las fronteras interiores."] },
+      { who: "comisario", lines: ["Unión económica y monetaria: criterios de convergencia de Maastricht, como déficit no superior al 3% del PIB y deuda no superior al 60%. El BCE dirige la política monetaria de la zona euro.", "Competencia: el art. 101 TFUE prohíbe los acuerdos restrictivos, el 102 el abuso de posición dominante y el 107 regula las ayudas de Estado. En la PESC se decide, por regla general, por unanimidad. La Fiscalía Europea persigue delitos contra el presupuesto de la UE."] },
+    ],
+    q: [
+      [1, "¿Cuáles son las cuatro libertades del mercado interior?", "Mercancías, personas, servicios y capitales", "Trabajo, vivienda, salud y educación", "Mercancías, moneda, energía y tierra", "Personas, información, armas y capitales"],
+      [1, "¿Qué límite de déficit público fija el criterio de Maastricht?", "3% del PIB", "5% del PIB", "1% del PIB", "60% del PIB"],
+      [2, "¿Qué límite de deuda pública fija el criterio de Maastricht?", "60% del PIB", "3% del PIB", "100% del PIB", "90% del PIB"],
+      [2, "¿Qué artículo del TFUE prohíbe el abuso de posición dominante?", "Art. 102", "Art. 101", "Art. 107", "Art. 288"],
+      [2, "¿Qué artículo prohíbe los acuerdos que restrinjan la competencia?", "Art. 101", "Art. 102", "Art. 107", "Art. 49"],
+      [2, "¿Qué regla de decisión rige generalmente en la PESC?", "Unanimidad", "Mayoría cualificada", "Mayoría simple", "Votación del Parlamento"],
+      [3, "¿Qué espacio permite cruzar fronteras interiores sin controles?", "Espacio Schengen", "Zona euro", "Unión aduanera", "Espacio Económico Europeo"],
+      [3, "¿Qué órgano persigue los delitos contra el presupuesto de la UE?", "La Fiscalía Europea", "Europol", "Eurojust", "Frontex"],
+    ],
+  },
+];
