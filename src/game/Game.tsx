@@ -481,7 +481,7 @@ function TitleScreen({ diffLabel, onPlay, onSim, onStats, onSettings, onHelp }: 
             </div>
           </div>
         </div>
-        <img src="/images/lia-win.png" alt="Lía, la opositora" className="title-lia" />
+        <img src="/images/lia-win.png" alt="Lía, la opositora" className="title-lia" loading="eager" draggable={false} />
       </div>
     </div>
   );

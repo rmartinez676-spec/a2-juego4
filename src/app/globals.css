@@ -1,8 +1,10 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
 @font-face {
   font-family: "PS2P";
-  src: url("/fonts/PressStart2P.woff2") format("woff2");
+  src: url("/fonts/PressStart2P.woff2") format("woff2"),
+       local("Press Start 2P");
   font-display: swap;
 }
 
@@ -232,8 +234,11 @@ body.admin-page {
 .title-lia {
   height: min(66vh, 480px);
   width: auto;
+  max-width: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
   animation: floaty 2.4s ease-in-out infinite;
+  display: block;
 }
 @keyframes floaty {
   50% {
@@ -1274,7 +1279,10 @@ body.admin-page {
     justify-content: center;
   }
   .title-lia {
-    height: 28vh;
+    height: min(28vh, 180px);
+    max-width: 80%;
+    margin: 0 auto;
+    object-fit: contain;
   }
   .diffs,
   .match {
@@ -1298,6 +1306,11 @@ body.admin-page {
   }
   .title-left {
     align-items: flex-start;
+  }
+  .title-lia {
+    height: min(60vh, 260px);
+    width: auto;
+    object-fit: contain;
   }
   .match {
     grid-template-columns: 1fr 1fr;
