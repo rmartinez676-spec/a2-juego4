@@ -80,6 +80,8 @@ export default function Game() {
   const [briefing, setBriefing] = useState<LevelRef | null>(null);
   const [modal, setModal] = useState<null | "settings" | "help" | "sim">(null);
   const [sim, setSim] = useState<SimCfg | null>(null);
+  const [syncingBoe, setSyncingBoe] = useState(false);
+  const [syncBoeMsg, setSyncBoeMsg] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setErr(false);
@@ -88,6 +90,32 @@ export default function Game() {
       .then((c: Content) => setContent(c))
       .catch(() => setErr(true));
   }, []);
+
+  const handleSyncBoe = useCallback(async () => {
+    setSyncingBoe(true);
+    setSyncBoeMsg("Consultando API del BOE...");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync" }),
+      });
+      const j = await res.json();
+      if (j.ok && Array.isArray(j.res)) {
+        const ok = (j.res as Array<{ ok: boolean }>).filter((x) => x.ok).length;
+        const chg = (j.res as Array<{ cambio?: boolean }>).filter((x) => x.cambio).length;
+        setSyncBoeMsg(`✓ Sincronizado: ${ok} normas al día · ${chg} con cambios`);
+        load();
+      } else {
+        setSyncBoeMsg("Sincronización finalizada");
+        load();
+      }
+    } catch {
+      setSyncBoeMsg("No se pudo conectar con el BOE");
+    } finally {
+      setSyncingBoe(false);
+    }
+  }, [load]);
 
   useEffect(() => {
     setMounted(true);
@@ -388,10 +416,27 @@ export default function Game() {
             </div>
             <div className="row" style={{ marginTop: 10 }}>
               <MuteBtn />
-              <span>Música y efectos</span>
-              <a className="btn small alt" href="/admin">
-                🔄 Actualizar temario (BOE)
-              </a>
+            </div>
+            <div style={{ marginTop: 12, padding: "10px 12px", background: "rgba(0,0,0,0.3)", borderRadius: 10, border: "2px solid #3c3485" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontWeight: "bold", fontSize: 13 }}>📜 Sincronización BOE</div>
+                  <div style={{ fontSize: 11, color: "#d9d4ff" }}>Legislación consolidada oficial</div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button className="btn small alt" disabled={syncingBoe} onClick={handleSyncBoe}>
+                    {syncingBoe ? "🔄 Consultando..." : "🔄 Sincronizar BOE"}
+                  </button>
+                  <a className="btn small dark" href="/admin" title="Panel de administración y preguntas">
+                    ⚙ Panel
+                  </a>
+                </div>
+              </div>
+              {syncBoeMsg && (
+                <div style={{ marginTop: 8, fontSize: 11, color: syncBoeMsg.startsWith("✓") ? "#4ade80" : "#ffd23c" }}>
+                  {syncBoeMsg}
+                </div>
+              )}
             </div>
             <div className="t-foot">
               <button className="btn" onClick={() => setModal(null)}>

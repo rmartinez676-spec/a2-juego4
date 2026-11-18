@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
 interface FuenteRow {
   id: string;
@@ -48,6 +49,7 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [protegido, setProtegido] = useState(false);
+  const [noDb, setNoDb] = useState(false);
   const [gen, setGen] = useState<Cloze[]>([]);
   const [genFuente, setGenFuente] = useState("");
   const [sel, setSel] = useState<number[]>([]);
@@ -80,6 +82,7 @@ export default function AdminPage() {
       setTemas(j.temas);
       setPregs(j.preguntas);
       setProtegido(j.protegido);
+      setNoDb(!!j.noDb);
       setMsg("");
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Error");
@@ -102,10 +105,26 @@ export default function AdminPage() {
 
   const sync = () =>
     run(async () => {
-      const j = await call({ action: "sync" });
-      const ok = j.res.filter((x: { ok: boolean }) => x.ok).length;
-      const chg = j.res.filter((x: { cambio?: boolean }) => x.cambio).length;
-      setMsg(`Sincronizado con el BOE: ${ok}/${j.res.length} normas consultadas · ${chg} con cambios nuevos.`);
+      const boe = fuentes.filter((f) => f.tipo === "boe");
+      const list = boe.length > 0 ? boe : [{ id: "BOE-A-1978-31229" }];
+      const batchSize = 10;
+      let totalOk = 0;
+      let totalChg = 0;
+      let totalCount = 0;
+
+      for (let i = 0; i < list.length; i += batchSize) {
+        const batch = list.slice(i, i + batchSize);
+        const batchIds = batch.map((x) => x.id);
+        setMsg(`Consultando BOE (${Math.min(i + batchSize, list.length)}/${list.length} normas)...`);
+        const j = await call({ action: "sync", ids: batchIds });
+        const ok = (j.res as Array<{ ok: boolean }>).filter((x) => x.ok).length;
+        const chg = (j.res as Array<{ cambio?: boolean }>).filter((x) => x.cambio).length;
+        totalOk += ok;
+        totalChg += chg;
+        totalCount += (j.res as unknown[]).length;
+      }
+
+      setMsg(`✓ Sincronizado con el BOE: ${totalOk}/${totalCount} normas consultadas · ${totalChg} con cambios recientes.`);
       await refresh();
     });
 
@@ -148,10 +167,16 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">Panel del temario · OPOS QUEST</h1>
           <p className="text-sm text-slate-600">Sincroniza las normas con el BOE y gestiona el banco de preguntas.</p>
         </div>
-        <a href="/" className="rounded bg-amber-400 px-3 py-2 text-sm font-bold">
+        <Link href="/" className="rounded bg-amber-400 px-3 py-2 text-sm font-bold">
           ← Volver al juego
-        </a>
+        </Link>
       </header>
+
+      {noDb && (
+        <div className="rounded border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
+          ℹ️ <b>Sincronización directa con el BOE:</b> Las normas se consultan en tiempo real con la API oficial de datos abiertos del BOE. No es obligatorio tener base de datos para sincronizar ni para generar preguntas.
+        </div>
+      )}
 
       {protegido && (
         <div className={box}>
